@@ -97,3 +97,12 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Find References 2 cache
+Assets/FR2_Cache.asset
+Assets/FR2_Cache.asset.meta
+
+# Jetbrains Rider personal-layer settings
+*.DotSettings.user
+*.DotSettings
+/.idea/
