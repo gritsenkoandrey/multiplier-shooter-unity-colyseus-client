@@ -6,6 +6,7 @@ namespace Game
     public sealed class EnemyController : MonoBehaviour
     {
         [SerializeField] private EnemyView _enemyView;
+        [SerializeField] private EnemyWeapon _enemyWeapon;
         
         private const int INTERVAL_BUFFER_SIZE = 5;
         private readonly float[] _receiveTimeIntervals = new float[INTERVAL_BUFFER_SIZE];
@@ -15,6 +16,8 @@ namespace Game
 
         public void Initialize(Player player, StateCallbackStrategy<State> callbacks)
         {
+            _enemyView.SetSpeed(player.speed);
+            
             callbacks.OnChange(player, () =>
             {
                 SaveReceiveTime(Time.time);
@@ -23,7 +26,17 @@ namespace Game
                 Vector3 newVelocity = new (player.vX, player.vY, player.vZ);
                 
                 _enemyView.SetPosition(newPosition, newVelocity, GetAverageInterval());
+                _enemyView.SetRotateX(player.rX);
+                _enemyView.SetRotateY(player.rY);
             });
+        }
+
+        public void Shoot(in ShootInfo info)
+        {
+            Vector3 position = new (info.pX, info.pY, info.pZ);
+            Vector3 velocity = new (info.dX, info.dY, info.dZ);
+            
+            _enemyWeapon.Shoot(position, velocity);
         }
 
         private void SaveReceiveTime(float time)

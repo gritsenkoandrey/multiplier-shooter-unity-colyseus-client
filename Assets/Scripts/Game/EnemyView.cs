@@ -2,8 +2,10 @@
 
 namespace Game
 {
-    public sealed class EnemyView : MonoBehaviour
+    public sealed class EnemyView : Character
     {
+        [SerializeField] private Transform _head;
+        
         private const float EPSILON = 0.1f;
         
         private Vector3 _position;
@@ -30,6 +32,23 @@ namespace Game
         {
             _position = position + velocity * averageInterval;
             _velocityMagnitude = velocity.magnitude;
+            
+            Velocity = velocity;
+        }
+
+        public void SetRotateX(float value)
+        {
+            _head.localEulerAngles = new (value, 0f, 0f);
+        }
+        
+        public void SetRotateY(float value)
+        {
+            transform.localEulerAngles = new (0f, value, 0f);
+        }
+        
+        public void SetSpeed(float value)
+        {
+            Speed = value;
         }
     }
 }

@@ -2,13 +2,14 @@
 using Colyseus;
 using Colyseus.Schema;
 using Game;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace Infrastructure
 {
     public sealed class MultiplierService : Manager<MultiplierService>
     {
-        [SerializeField] private PlayerController _playerPrefab;
+        [SerializeField] private PlayerView _playerPrefab;
         [SerializeField] private EnemyController _enemyPrefab;
 
         private Room<State> _room;
@@ -34,15 +35,23 @@ namespace Infrastructure
 
         private async void Connect()
         {
-            _room = await Instance.client.JoinOrCreate<State>("state_handler");
+            Dictionary<string, object> options = new ()
+            {
+                {
+                    "speed", _playerPrefab.Speed
+                }
+            };
+            
+            _room = await Instance.client.JoinOrCreate<State>("state_handler", options);
             
             _room.OnStateChange += OnStateChange;
             
             _callbacks = Callbacks.Get(_room);
             _callbacks.OnAdd(state => state.players, Add);
             _callbacks.OnRemove(state => state.players, Remove);
+            _room.OnMessage<string>("shoot-data", ApplyShoot);
         }
-        
+
         private void OnStateChange(State state, bool isFirstState)
         {
             if (isFirstState) return;
@@ -74,7 +83,7 @@ namespace Infrastructure
         {
             Vector3 position = new (player.pX, player.pY, player.pZ);
 
-            PlayerController view = Instantiate(_playerPrefab, position, Quaternion.identity);
+            PlayerView view = Instantiate(_playerPrefab, position, Quaternion.identity);
         }
 
         private void SpawnEnemy(string key, Player player)
@@ -87,10 +96,35 @@ namespace Infrastructure
             
             _enemies.Add(key, view);
         }
+        
+        private void ApplyShoot(string jsonShootInfo)
+        {
+            ShootInfo shootInfo = JsonConvert.DeserializeObject<ShootInfo>(jsonShootInfo);
+
+            if (_enemies.TryGetValue(shootInfo.key, out EnemyController enemy))
+            {
+                enemy.Shoot(shootInfo);
+            }
+            else
+            {
+                Debug.LogError("Enemy Not Found");
+            }
+        }
 
         public void SendMessage(string key, Dictionary<string, object> data)
         {
             _room.Send(key, data);
+        }
+
+        public void SendMessage(string key, string data)
+        {
+            _room.Send(key, data);
+        }
+        
+        
+        public string GetKey()
+        {
+            return _room.SessionId;
         }
     }
 }

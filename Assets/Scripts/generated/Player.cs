@@ -32,5 +32,14 @@ public Player() { }
 
 	[Type(5, "number")]
 	public float vZ = default(float);
+
+	[Type(6, "number")]
+	public float speed = default(float);
+
+	[Type(7, "number")]
+	public float rX = default(float);
+
+	[Type(8, "number")]
+	public float rY = default(float);
 }
 
