@@ -9,8 +9,9 @@ namespace Infrastructure
 {
     public sealed class MultiplierService : Manager<MultiplierService>
     {
-        [SerializeField] private PlayerView _playerPrefab;
+        [SerializeField] private PlayerController _playerPrefab;
         [SerializeField] private EnemyController _enemyPrefab;
+        [SerializeField] private HUD _hudPrefab;
 
         private Room<State> _room;
         private StateCallbackStrategy<State> _callbacks;
@@ -29,7 +30,6 @@ namespace Infrastructure
         {
             base.OnDestroy();
             
-            _room.OnStateChange -= OnStateChange;
             _room.Leave();
         }
 
@@ -39,22 +39,21 @@ namespace Infrastructure
             {
                 {
                     "speed", _playerPrefab.Speed
+                },
+                {
+                    "maxHp", _playerPrefab.MaxHealth
+                },
+                {
+                    "curHp", _playerPrefab.MaxHealth
                 }
             };
             
             _room = await Instance.client.JoinOrCreate<State>("state_handler", options);
             
-            _room.OnStateChange += OnStateChange;
-            
             _callbacks = Callbacks.Get(_room);
             _callbacks.OnAdd(state => state.players, Add);
             _callbacks.OnRemove(state => state.players, Remove);
-            _room.OnMessage<string>("shoot-data", ApplyShoot);
-        }
-
-        private void OnStateChange(State state, bool isFirstState)
-        {
-            if (isFirstState) return;
+            _room.OnMessage<string>("shoot_action", ApplyShoot);
         }
         
         private void Add(string key, Player player)
@@ -83,7 +82,9 @@ namespace Infrastructure
         {
             Vector3 position = new (player.pX, player.pY, player.pZ);
 
-            PlayerView view = Instantiate(_playerPrefab, position, Quaternion.identity);
+            PlayerController view = Instantiate(_playerPrefab, position, Quaternion.identity);
+            HUD hud = Instantiate(_hudPrefab);
+            view.Initialize(player, _callbacks, hud.HealthView);
         }
 
         private void SpawnEnemy(string key, Player player)
@@ -92,7 +93,7 @@ namespace Infrastructure
 
             EnemyController view = Instantiate(_enemyPrefab, position, Quaternion.identity);
 
-            view.Initialize(player, _callbacks);
+            view.Initialize(key, player, _callbacks);
             
             _enemies.Add(key, view);
         }
@@ -111,20 +112,10 @@ namespace Infrastructure
             }
         }
 
-        public void SendMessage(string key, Dictionary<string, object> data)
-        {
-            _room.Send(key, data);
-        }
+        public void SendMessage(string key, Dictionary<string, object> data) => _room.Send(key, data);
 
-        public void SendMessage(string key, string data)
-        {
-            _room.Send(key, data);
-        }
-        
-        
-        public string GetKey()
-        {
-            return _room.SessionId;
-        }
+        public void SendMessage(string key, string data) => _room.Send(key, data);
+
+        public string GetSessionId() => _room.SessionId;
     }
 }

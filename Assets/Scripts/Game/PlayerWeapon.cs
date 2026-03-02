@@ -7,6 +7,7 @@ namespace Game
         [SerializeField] private Transform _spawnPoint;
         [SerializeField] private float _bulletSpeed;
         [SerializeField] private float _fireRate;
+        [SerializeField] private int _damage;
         
         private float _lastFireTime;
         
@@ -23,7 +24,7 @@ namespace Game
             
             Bullet bullet = Instantiate(_bulletPrefab, position, _spawnPoint.rotation);
             
-            bullet.Initialize(velocity);
+            bullet.Initialize(velocity, _damage);
             
             _lastFireTime = Time.time;
             

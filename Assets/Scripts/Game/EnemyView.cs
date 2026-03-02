@@ -1,15 +1,23 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using Infrastructure;
+using UnityEngine;
 
 namespace Game
 {
     public sealed class EnemyView : Character
     {
         [SerializeField] private Transform _head;
-        
-        private const float EPSILON = 0.1f;
-        
+        [SerializeField] private Health _health;
+
         private Vector3 _position;
         private float _velocityMagnitude;
+        private readonly Dictionary<string, object> _data = new ()
+        {
+            {"id", string.Empty},
+            {"value", string.Empty}
+        };
+        
+        private const float EPSILON = 0.1f;
 
         private void Awake()
         {
@@ -27,6 +35,11 @@ namespace Game
                 transform.position = _position;
             }
         }
+
+        public void SetSessionId(string sessionId)
+        {
+            _data["id"] = sessionId;
+        }
         
         public void SetPosition(in Vector3 position, in Vector3 velocity, in float averageInterval)
         {
@@ -36,19 +49,27 @@ namespace Game
             Velocity = velocity;
         }
 
-        public void SetRotateX(float value)
-        {
-            _head.localEulerAngles = new (value, 0f, 0f);
-        }
+        public void SetRotateX(float value) => _head.localEulerAngles = new (value, 0f, 0f);
+
+        public void SetRotateY(float value) => transform.localEulerAngles = new (0f, value, 0f);
+
+        public void SetSpeed(float value) => Speed = value;
         
-        public void SetRotateY(float value)
+        public void SetMaxHealth(int value)
         {
-            transform.localEulerAngles = new (0f, value, 0f);
+            MaxHealth = value;
+            
+            _health.SetMax(value);
+            _health.SetCurrent(value);
         }
-        
-        public void SetSpeed(float value)
+
+        public void ApplyDamage(int damage)
         {
-            Speed = value;
+            _health.ApplyDamage(damage);
+            
+            _data["value"] = damage;
+            
+            MultiplierService.Instance.SendMessage("damage", _data);
         }
     }
 }

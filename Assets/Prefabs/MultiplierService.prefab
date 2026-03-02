@@ -45,5 +45,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _colyseusSettings: {fileID: 11400000, guid: a4a75bbf892149544ad46857c7d90170, type: 2}
-  _playerPrefab: {fileID: 7399355420735184178, guid: 644637bb798bd6c4fa955b66adc7bc49, type: 3}
+  _playerPrefab: {fileID: 3652885308556641716, guid: 644637bb798bd6c4fa955b66adc7bc49, type: 3}
   _enemyPrefab: {fileID: 5427772956466256833, guid: 257251bac184a4f46a6f9e07d5540acf, type: 3}
+  _hudPrefab: {fileID: 8877289695406214652, guid: e96f4273f1ea46d4d967d14cefc498e9, type: 3}

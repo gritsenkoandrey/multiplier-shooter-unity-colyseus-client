@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Colyseus.Schema;
 using Infrastructure;
 using Newtonsoft.Json;
 using Settings;
@@ -10,6 +11,7 @@ namespace Game
     {
         [SerializeField] private PlayerView _playerView;
         [SerializeField] private PlayerWeapon _playerWeapon;
+        [SerializeField] private Health _health;
         [SerializeField] private float _mouseSensitivity = 2f;
 
         private readonly Dictionary<string, object> _data = new ()
@@ -18,6 +20,9 @@ namespace Game
             { "vX", 0f }, { "vY", 0f }, { "vZ", 0f }, 
             { "rX", 0f }, { "rY", 0f }
         };
+
+        public int MaxHealth => _playerView.MaxHealth;
+        public float Speed => _playerView.Speed;
         
         private MultiplierService _multiplierService;
 
@@ -49,6 +54,15 @@ namespace Game
             
             SendMove();
         }
+
+        public void Initialize(Player player, StateCallbackStrategy<State> callbacks, HealthView healthView)
+        {
+            _health.SetHealthView(healthView);
+            _health.SetMax(player.maxHp);
+            _health.SetCurrent(player.curHp);
+            
+            callbacks.Listen(player, p => p.curHp, (cur, prev) => _health.SetCurrent(cur));
+        }
         
         private void SendMove()
         {
@@ -68,7 +82,7 @@ namespace Game
 
         private void SendShoot(ref ShootInfo info)
         {
-            info.key = _multiplierService.GetKey();
+            info.key = _multiplierService.GetSessionId();
             
             string json = JsonConvert.SerializeObject(info, JsonSettings.Settings);
             

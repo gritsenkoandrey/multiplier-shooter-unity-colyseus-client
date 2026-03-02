@@ -14,10 +14,12 @@ namespace Game
         private float _intervalSum;
         private float _lastReceiveTime;
 
-        public void Initialize(Player player, StateCallbackStrategy<State> callbacks)
+        public void Initialize(string sessionId, Player player, StateCallbackStrategy<State> callbacks)
         {
+            _enemyView.SetSessionId(sessionId);
             _enemyView.SetSpeed(player.speed);
-            
+            _enemyView.SetMaxHealth(player.maxHp);
+
             callbacks.OnChange(player, () =>
             {
                 SaveReceiveTime(Time.time);

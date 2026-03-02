@@ -41,5 +41,11 @@ public Player() { }
 
 	[Type(8, "number")]
 	public float rY = default(float);
+
+	[Type(9, "int8")]
+	public sbyte maxHp = default(sbyte);
+
+	[Type(10, "int8")]
+	public sbyte curHp = default(sbyte);
 }
 
