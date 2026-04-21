@@ -12,14 +12,18 @@ namespace Infrastructure
         [SerializeField] private PlayerController _playerPrefab;
         [SerializeField] private EnemyController _enemyPrefab;
         [SerializeField] private HUD _hudPrefab;
+        [SerializeField] private SpawnPoints _spawnPoints; 
 
         private Room<State> _room;
         private StateCallbackStrategy<State> _callbacks;
         private readonly Dictionary<string, EnemyController> _enemies = new ();
+        private HUD _hud;
         
         protected override void Awake()
         {
             base.Awake();
+            
+            _hud = Instantiate(_hudPrefab);
             
             Instance.InitializeClient();
             
@@ -35,17 +39,20 @@ namespace Infrastructure
 
         private async void Connect()
         {
+            Transform spawnPoint = _spawnPoints.GetRandomSpawnPoint();
+            
+            Vector3 pos = spawnPoint.position;
+            
             Dictionary<string, object> options = new ()
             {
-                {
-                    "speed", _playerPrefab.Speed
-                },
-                {
-                    "maxHp", _playerPrefab.MaxHealth
-                },
-                {
-                    "curHp", _playerPrefab.MaxHealth
-                }
+                {"speed", _playerPrefab.Speed},
+                {"maxHp", _playerPrefab.MaxHealth},
+                {"curHp", _playerPrefab.MaxHealth},
+                {"pX", pos.x},
+                {"pY", pos.y},
+                {"pZ", pos.z},
+                {"rY", spawnPoint.eulerAngles.y},
+                {"sPoints", _spawnPoints.Length},
             };
             
             _room = await Instance.client.JoinOrCreate<State>("state_handler", options);
@@ -81,10 +88,13 @@ namespace Infrastructure
         private void SpawnPlayer(Player player)
         {
             Vector3 position = new (player.pX, player.pY, player.pZ);
+            Quaternion rotation = Quaternion.Euler(0f, player.rY, 0f);
 
-            PlayerController view = Instantiate(_playerPrefab, position, Quaternion.identity);
-            HUD hud = Instantiate(_hudPrefab);
-            view.Initialize(player, _callbacks, hud.HealthView);
+            PlayerController view = Instantiate(_playerPrefab, position, rotation);
+            
+            view.Initialize(player, _callbacks, _hud.HealthView, _hud.ScoreView, _spawnPoints);
+            
+            _room.OnMessage<int>("restart", view.Restart);
         }
 
         private void SpawnEnemy(string key, Player player)
@@ -93,7 +103,7 @@ namespace Infrastructure
 
             EnemyController view = Instantiate(_enemyPrefab, position, Quaternion.identity);
 
-            view.Initialize(key, player, _callbacks);
+            view.Initialize(key, player, _hud.ScoreView, _callbacks);
             
             _enemies.Add(key, view);
         }

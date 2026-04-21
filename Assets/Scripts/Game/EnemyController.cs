@@ -14,7 +14,7 @@ namespace Game
         private float _intervalSum;
         private float _lastReceiveTime;
 
-        public void Initialize(string sessionId, Player player, StateCallbackStrategy<State> callbacks)
+        public void Initialize(string sessionId, Player player, ScoreView scoreView, StateCallbackStrategy<State> callbacks)
         {
             _enemyView.SetSessionId(sessionId);
             _enemyView.SetSpeed(player.speed);
@@ -30,6 +30,9 @@ namespace Game
                 _enemyView.SetPosition(newPosition, newVelocity, GetAverageInterval());
                 _enemyView.SetRotateX(player.rX);
                 _enemyView.SetRotateY(player.rY);
+                _enemyView.RestoreHealth(player.curHp);
+                
+                scoreView.SetEnemyScore(player.loss);
             });
         }
 

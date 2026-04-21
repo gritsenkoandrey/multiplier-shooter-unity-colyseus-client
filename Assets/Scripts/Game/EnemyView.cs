@@ -62,6 +62,11 @@ namespace Game
             _health.SetMax(value);
             _health.SetCurrent(value);
         }
+        
+        public void RestoreHealth(int value)
+        {
+            _health.SetCurrent(value);
+        }
 
         public void ApplyDamage(int damage)
         {

@@ -47,5 +47,8 @@ public Player() { }
 
 	[Type(10, "int8")]
 	public sbyte curHp = default(sbyte);
+
+	[Type(11, "uint8")]
+	public byte loss = default(byte);
 }
 
